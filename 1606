@@ -1,0 +1,38 @@
+from sortedcontainers import SortedList
+import heapq
+
+class Solution:
+    def busiestServers(self, k: int, arrival: list[int], load: list[int]) -> list[int]:
+
+        available = SortedList(range(k))
+        busy = []
+        counts = [0] * k
+
+        for i in range(len(arrival)):
+
+            arr_time, load_time = arrival[i], load[i]
+
+            while busy and busy[0][0] <= arr_time:
+                end_time, server_id = heapq.heappop(busy)
+                available.add(server_id)
+
+            if not available:
+                continue
+
+            idx = available.bisect_left(i % k)
+
+            if idx == len(available):
+                idx = 0
+
+            server_id = available.pop(idx)
+
+            counts[server_id] += 1
+
+            heapq.heappush(
+                busy,
+                (arr_time + load_time, server_id)
+            )
+
+        max_reqs = max(counts)
+
+        return [i for i in range(k) if counts[i] == max_reqs]
